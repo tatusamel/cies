@@ -4,12 +4,14 @@ import com.yurtHomies.cies.model.entities.User;
 import com.yurtHomies.cies.model.requests.ForgotPasswordRequest;
 import com.yurtHomies.cies.model.requests.UserRegisterRequest;
 import com.yurtHomies.cies.model.requests.UserRequest;
+import com.yurtHomies.cies.service.EmailSenderService;
 import com.yurtHomies.cies.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @CrossOrigin
 @RestController
@@ -18,6 +20,7 @@ import java.util.Random;
 public class AuthController {
 
     private final UserService userService;
+    private final EmailSenderService emailSenderService;
 
     @PostMapping("/login")
     public String login(@RequestBody UserRequest request) {
@@ -43,11 +46,11 @@ public class AuthController {
         user.setId(request.getId());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        // TODO:: sifreyi burada rastgele uret
-        user.setPassword(String.valueOf(generateRandomNumber(100000,999999)));
+        user.setPassword(UUID.randomUUID().toString());
+        user.setEmail(request.getEmail());
         userService.saveUser(user);
 
-        return new String("Successful");
+        return new String("Registration is successful. Your password has been sent to your email.");
     }
 
     @PostMapping("forgotPassword")
@@ -56,7 +59,10 @@ public class AuthController {
         if ( user == null ) {
             return new String("No such user with id: " + String.valueOf(request.getId()));
         }
-        return new String(user.getPassword());
+        emailSenderService.sendEmail(user.getEmail(),
+                "Your ICES4HU password",
+                "Your ICES4HU password is: " + user.getPassword());
+        return new String("Your password has been sent to the email which is associated with the id: " + user.getId());
     }
 
     public static int generateRandomNumber(int mn, int mx){
