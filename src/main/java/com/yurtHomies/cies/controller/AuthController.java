@@ -46,10 +46,16 @@ public class AuthController {
         user.setId(request.getId());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setPassword(UUID.randomUUID().toString());
         user.setEmail(request.getEmail());
+
+        String thePassword = UUID.randomUUID().toString();
+        user.setPassword(thePassword);
         userService.saveUser(user);
 
+        emailSenderService.sendEmail(user.getEmail(),
+                               "Welcome to ICES4HU.",
+                                      "Welcome to ICES4HU. Here is your password: " + thePassword
+                                    + "\n\nYou can always change your password later on.");
         return new String("Registration is successful. Your password has been sent to your email.");
     }
 
